@@ -5,7 +5,7 @@ output "access_logs_bucket" {
 
 output "access_logs_bucket_name" {
   description = "Name of the access logs bucket"
-  value       = var.access_logs_bucket_name
+  value       = google_storage_bucket.access_logs_bucket.name
 }
 
 output "website_bucket" {
@@ -15,7 +15,7 @@ output "website_bucket" {
 
 output "website_bucket_name" {
   description = "Name of the website bucket"
-  value       = var.website_bucket_name
+  value       = google_storage_bucket.website_bucket.name
 }
 
 output "website_url" {

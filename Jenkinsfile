@@ -3,6 +3,7 @@ pipeline {
     environment {
         GCP_CREDENTIALS = credentials('gcp-credentials') // Use Jenkins credentials ID for GCP service account
         TERRAFORM_DIR = './project-directory' // Adjust the directory path if necessary
+        GOOGLE_APPLICATION_CREDENTIALS = "${GCP_CREDENTIALS}" // Set for Terraform's GCP auth
     }
     stages {
         stage('Clone Repository') {
