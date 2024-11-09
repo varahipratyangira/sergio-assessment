@@ -1,0 +1,5 @@
+project_id             = "rga-assessment"
+region                 = "us-west1"
+location               = "US-WEST1"
+website_bucket_name    = "rga-assessment"
+access_logs_bucket_name = "rga-assessment-access-logs"
