@@ -32,6 +32,12 @@ pipeline {
                 }
             }
         }
+        stage('Verify Deployment') {
+            steps {
+                echo "Verifying that the static website is running and load balancer is configured..."
+                // You may add curl checks or other verification mechanisms as needed.
+            }
+        }
     }
     triggers {
         githubPush() // Automatically triggers builds on GitHub push events

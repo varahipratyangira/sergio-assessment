@@ -22,3 +22,8 @@ output "website_url" {
   description = "URL of the website"
   value       = "http://${google_storage_bucket.website_bucket.name}.storage.googleapis.com"
 }
+
+output "load_balancer_ip" {
+  description = "IP address of the load balancer"
+  value       = google_compute_global_forwarding_rule.http_rule.ip_address
+}
