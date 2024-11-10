@@ -1,4 +1,3 @@
-# Provider configuration for Google Cloud
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -10,7 +9,7 @@ provider "google" {
 resource "google_storage_bucket" "access_logs_bucket" {
   name                        = var.access_logs_bucket_name
   location                    = var.location
-  force_destroy               = var.force_destroy
+  force_destroy               = true
   uniform_bucket_level_access = true
 }
 
@@ -18,36 +17,27 @@ resource "google_storage_bucket" "access_logs_bucket" {
 resource "google_storage_bucket" "website_bucket" {
   name                        = var.website_bucket_name
   location                    = var.location
-  force_destroy               = var.force_destroy
+  force_destroy               = true
   uniform_bucket_level_access = true
 
   website {
-    main_page_suffix = var.main_page_suffix
-    not_found_page   = var.not_found_page
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
   }
 
   logging {
     log_bucket        = google_storage_bucket.access_logs_bucket.name
-    log_object_prefix = var.log_object_prefix
+    log_object_prefix = "website-access-logs/"
   }
 
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# Fetch index.html from GitHub repository and upload to the website bucket
+# Upload static website files (index.html, 404.html)
 resource "google_storage_bucket_object" "index_html" {
   name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
-  source        = var.github_index_html_url
-  content_type  = "text/html"
-}
-
-# Optional: Upload other files (if needed)
-resource "google_storage_bucket_object" "other_files" {
-  count         = length(var.additional_files)
-  name          = element(var.additional_files, count.index)
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = element(var.additional_files_paths, count.index)
+  source        = "index.html"  # Local file path (downloaded before apply)
   content_type  = "text/html"
 }
 
@@ -70,5 +60,14 @@ resource "google_compute_target_http_proxy" "website_http_proxy" {
 resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
   name       = "website-forwarding-rule"
   target     = google_compute_target_http_proxy.website_http_proxy.self_link
-  port_range = var.front_end_port
+  port_range = var.load_balancer_frontend_port
+}
+
+# Optional: Upload additional files (if needed)
+resource "google_storage_bucket_object" "additional_files" {
+  count         = length(var.additional_files)
+  name          = element(var.additional_files, count.index)
+  bucket        = google_storage_bucket.website_bucket.name
+  source        = element(var.additional_files_paths, count.index)
+  content_type  = "text/html"
 }

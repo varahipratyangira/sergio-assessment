@@ -11,6 +11,12 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
             }
         }
+        stage('Download HTML File') {
+            steps {
+                // Optionally, download the index.html file or any other files before applying Terraform
+                sh 'curl -o ${TERRAFORM_DIR}/index.html https://github.com/varahipratyangira/static-html-webpage/raw/main/index.html'
+            }
+        }
         stage('Setup Terraform') {
             steps {
                 dir("${TERRAFORM_DIR}") {

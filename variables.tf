@@ -10,7 +10,7 @@ variable "region" {
 
 variable "zone" {
   description = "GCP Zone"
-  default     = "us-west1-a"
+  default     = "us-west1a"
 }
 
 variable "location" {
@@ -33,42 +33,24 @@ variable "gcp_credentials_file" {
   default     = "/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json"
 }
 
-variable "github_index_html_url" {
-  description = "GitHub URL for index.html"
-  default     = "https://github.com/varahipratyangira/static-html-webpage/blob/main/index.html"
-}
-
-variable "main_page_suffix" {
-  description = "Main page suffix for the static website"
-  default     = "index.html"
-}
-
-variable "not_found_page" {
-  description = "Not found page for the static website"
-  default     = "404.html"
-}
-
-variable "log_object_prefix" {
-  description = "Prefix for access logs"
-  default     = "website-access-logs/"
-}
-
-variable "front_end_port" {
-  description = "Port for the HTTP Load Balancer"
-  default     = "80"
-}
-
-variable "force_destroy" {
-  description = "Whether to force destroy resources"
-  default     = true
+variable "index_html_url" {
+  description = "URL to the index.html file"
+  default     = "https://github.com/varahipratyangira/static-html-webpage/raw/main/index.html"
 }
 
 variable "additional_files" {
   description = "List of additional files to upload"
+  type        = list(string)
   default     = []
 }
 
 variable "additional_files_paths" {
-  description = "Paths to additional files to upload"
+  description = "List of paths to additional files"
+  type        = list(string)
   default     = []
+}
+
+variable "load_balancer_frontend_port" {
+  description = "Port for the frontend load balancer"
+  default     = "80"
 }
