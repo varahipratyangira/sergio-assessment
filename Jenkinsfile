@@ -2,52 +2,45 @@ pipeline {
     agent any
 
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = '/path/to/your/gcp-credentials-file.json'  // GCP credentials path
+        GOOGLE_CREDENTIALS = credentials('google-cloud-service-account')
+        TF_VAR_project_id = 'trusty-wavelet-441019-i7'
+        TF_VAR_region = 'us-west1'
+        TF_VAR_location = 'US'
+        TF_VAR_website_bucket_name = 'rga-sergio-assessment-bucket'
+        TF_VAR_access_logs_bucket_name = 'rga-sergio-assessment-access-logs'
+        TF_VAR_gcp_credentials_file = '/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json'
+        TF_VAR_github_index_html_url = 'https://github.com/varahipratyangira/static-html-webpage/raw/main/index.html'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from GitHub
-                git 'https://github.com/varahipratyangira/gcp-terraform-ansible-deployment.git'
+                checkout scm
             }
         }
 
-        stage('Initialize Terraform') {
+        stage('Terraform Init') {
             steps {
-                // Initialize Terraform
                 sh 'terraform init'
             }
         }
 
-        stage('Validate Terraform') {
+        stage('Terraform Plan') {
             steps {
-                // Validate Terraform configuration
-                sh 'terraform validate'
+                sh 'terraform plan -out=tfplan'
             }
         }
 
-        stage('Plan Terraform') {
+        stage('Terraform Apply') {
             steps {
-                // Generate Terraform plan with the variable file
-                sh 'terraform plan -var-file=terraform.tfvars'
-            }
-        }
-
-        stage('Apply Terraform') {
-            steps {
-                // Apply Terraform changes automatically
-                sh 'terraform apply -auto-approve -var-file=terraform.tfvars'
+                sh 'terraform apply tfplan'
             }
         }
     }
 
     post {
-        success {
-            echo 'Terraform Apply completed successfully'
-        }
-        failure {
-            echo 'Terraform Apply failed'
+        always {
+            cleanWs()
         }
     }
 }

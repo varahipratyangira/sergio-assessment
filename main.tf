@@ -2,20 +2,19 @@ provider "google" {
   project     = var.project_id
   region      = var.region
   credentials = file(var.gcp_credentials_file)
-  zone        = var.zone
 }
 
-# Access Logs Bucket (Unique naming based on timestamp)
+# Access Logs Bucket with timestamp
 resource "google_storage_bucket" "access_logs_bucket" {
-  name                        = "${var.access_logs_bucket_name}-${timestamp()}"
+  name                        = "${var.access_logs_bucket_name}-${replace(timestamp(), ":", "-")}"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
 }
 
-# Website Bucket for Static Content (Unique naming based on timestamp)
+# Website Bucket for Static Content with timestamp
 resource "google_storage_bucket" "website_bucket" {
-  name                        = "${var.website_bucket_name}-${timestamp()}"
+  name                        = "${var.website_bucket_name}-${replace(timestamp(), ":", "-")}"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -33,12 +32,12 @@ resource "google_storage_bucket" "website_bucket" {
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# Fetch index.html from the GitHub repository and upload to the website bucket
+# Upload Static Website Files from GitHub URL (index.html)
 resource "google_storage_bucket_object" "index_html" {
-  name          = "index.html"
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = var.github_index_html_url
-  content_type  = "text/html"
+  name         = "index.html"
+  bucket       = google_storage_bucket.website_bucket.name
+  source       = var.github_index_html_url
+  content_type = "text/html"
 }
 
 # HTTP Load Balancer Setup
@@ -63,11 +62,7 @@ resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
   port_range = "80"
 }
 
-# Optional: Upload additional files (if any)
-resource "google_storage_bucket_object" "additional_files" {
-  count         = length(var.additional_files)
-  name          = element(var.additional_files, count.index)
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = element(var.additional_files_paths, count.index)
-  content_type  = "text/html"
+output "website_url" {
+  description = "URL of the static website"
+  value       = "http://${google_compute_global_forwarding_rule.website_forwarding_rule.ip_address}"
 }
