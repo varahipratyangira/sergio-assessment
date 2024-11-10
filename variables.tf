@@ -20,10 +20,10 @@ variable "location" {
 
 variable "website_bucket_name" {
   description = "Name of the bucket to host the static website"
-  default     = "rga-bucket"
+  default     = "rga-sergio-assessment-bucket"
 }
 
 variable "access_logs_bucket_name" {
   description = "Name of the bucket for storing access logs"
-  default     = "rga-access-logs"
+  default     = "rga-sergio-assessment-access-logs"
 }
