@@ -32,14 +32,6 @@ pipeline {
                 }
             }
         }
-        stage('Upload Files') {
-            steps {
-                dir("${TERRAFORM_DIR}") {
-                    sh 'terraform apply -target=google_storage_object.index_html -auto-approve'
-                    sh 'terraform apply -target=google_storage_object.not_found_html -auto-approve'
-                }
-            }
-        }
     }
     triggers {
         githubPush() // Automatically triggers builds on GitHub push events

@@ -22,32 +22,27 @@ resource "google_storage_bucket" "website_bucket" {
   uniform_bucket_level_access = true
 
   website {
-    main_page_suffix = "index.html"
-    not_found_page   = "404.html"
+    main_page_suffix = var.main_page_suffix
+    not_found_page   = var.not_found_page
   }
 
   logging {
     log_bucket        = google_storage_bucket.access_logs_bucket.name
-    log_object_prefix = "website-access-logs/"
-  }
-
-  acl {
-    role   = "READER"
-    entity = "allUsers"
+    log_object_prefix = var.log_object_prefix
   }
 
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
 # Upload static website files (index.html, 404.html)
-resource "google_storage_object" "index_html" {
+resource "google_storage_bucket_object" "index_html" {
   name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
   source        = var.index_html_path
   content_type  = "text/html"
 }
 
-resource "google_storage_object" "not_found_html" {
+resource "google_storage_bucket_object" "not_found_html" {
   name          = "404.html"
   bucket        = google_storage_bucket.website_bucket.name
   source        = var.not_found_html_path
