@@ -11,6 +11,11 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
             }
         }
+        stage('Fetch HTML from GitHub') {
+            steps {
+                sh 'curl -L -o index.html ${GITHUB_INDEX_HTML_URL}'
+            }
+        }
         stage('Setup Terraform') {
             steps {
                 dir("${TERRAFORM_DIR}") {
@@ -32,9 +37,6 @@ pipeline {
                 }
             }
         }
-    }
-    triggers {
-        githubPush() // Automatically triggers builds on GitHub push events
     }
     post {
         always {

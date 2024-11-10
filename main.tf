@@ -33,7 +33,34 @@ resource "google_storage_bucket" "website_bucket" {
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# HTTP Load Balancer Resources
+# Fetch `index.html` from GitHub URL
+resource "null_resource" "fetch_index_html" {
+  provisioner "local-exec" {
+    command = "curl -L -o index.html ${var.github_index_html_url}"
+  }
+}
+
+# Upload `index.html` to the Website Bucket
+resource "google_storage_bucket_object" "index_html" {
+  name         = "index.html"
+  bucket       = google_storage_bucket.website_bucket.name
+  source       = "index.html"
+  content_type = "text/html"
+
+  depends_on = [null_resource.fetch_index_html]
+}
+
+# Upload additional files if any
+resource "google_storage_bucket_object" "additional_files" {
+  count         = length(var.additional_files)
+  name          = element(var.additional_files, count.index)
+  bucket        = google_storage_bucket.website_bucket.name
+  source        = element(var.additional_files_paths, count.index)
+  content_type  = "text/html"
+  depends_on    = [null_resource.fetch_index_html]
+}
+
+# HTTP Load Balancer Setup
 resource "google_compute_backend_bucket" "website_backend" {
   name        = "website-backend"
   bucket_name = google_storage_bucket.website_bucket.name
@@ -53,28 +80,4 @@ resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
   name       = "website-forwarding-rule"
   target     = google_compute_target_http_proxy.website_http_proxy.self_link
   port_range = "80"
-}
-
-# Upload static website files
-resource "google_storage_bucket_object" "index_html" {
-  name          = "index.html"
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = var.index_html_path
-  content_type  = "text/html"
-}
-
-resource "google_storage_bucket_object" "not_found_html" {
-  name          = "404.html"
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = var.not_found_html_path
-  content_type  = "text/html"
-}
-
-# Optional: Upload other files (if needed)
-resource "google_storage_bucket_object" "other_files" {
-  count         = length(var.additional_files)
-  name          = element(var.additional_files, count.index)
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = element(var.additional_files_paths, count.index)
-  content_type  = "text/html"
 }
