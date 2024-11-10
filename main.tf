@@ -9,7 +9,7 @@ provider "google" {
 resource "google_storage_bucket" "access_logs_bucket" {
   name                        = var.access_logs_bucket_name
   location                    = var.location
-  force_destroy               = true
+  force_destroy               = var.force_destroy
   uniform_bucket_level_access = true
 }
 
@@ -17,47 +17,28 @@ resource "google_storage_bucket" "access_logs_bucket" {
 resource "google_storage_bucket" "website_bucket" {
   name                        = var.website_bucket_name
   location                    = var.location
-  force_destroy               = true
+  force_destroy               = var.force_destroy
   uniform_bucket_level_access = true
 
   website {
-    main_page_suffix = "index.html"
-    not_found_page   = "404.html"
+    main_page_suffix = var.main_page_suffix
+    not_found_page   = var.not_found_page
   }
 
   logging {
     log_bucket        = google_storage_bucket.access_logs_bucket.name
-    log_object_prefix = "website-access-logs/"
+    log_object_prefix = var.log_object_prefix
   }
 
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# Fetch `index.html` from GitHub URL
-resource "null_resource" "fetch_index_html" {
-  provisioner "local-exec" {
-    command = "curl -L -o index.html ${var.github_index_html_url}"
-  }
-}
-
-# Upload `index.html` to the Website Bucket
-resource "google_storage_bucket_object" "index_html" {
-  name         = "index.html"
-  bucket       = google_storage_bucket.website_bucket.name
-  source       = "index.html"
-  content_type = "text/html"
-
-  depends_on = [null_resource.fetch_index_html]
-}
-
-# Upload additional files if any
-resource "google_storage_bucket_object" "additional_files" {
-  count         = length(var.additional_files)
-  name          = element(var.additional_files, count.index)
+# Fetch index.html from GitHub repository and upload to the website bucket
+resource "google_storage_object" "index_html" {
+  name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
-  source        = element(var.additional_files_paths, count.index)
+  source        = var.github_index_html_url
   content_type  = "text/html"
-  depends_on    = [null_resource.fetch_index_html]
 }
 
 # HTTP Load Balancer Setup
@@ -79,5 +60,5 @@ resource "google_compute_target_http_proxy" "website_http_proxy" {
 resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
   name       = "website-forwarding-rule"
   target     = google_compute_target_http_proxy.website_http_proxy.self_link
-  port_range = "80"
+  port_range = var.front_end_port
 }

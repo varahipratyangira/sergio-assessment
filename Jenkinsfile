@@ -8,12 +8,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
-            }
-        }
-        stage('Fetch HTML from GitHub') {
-            steps {
-                sh 'curl -L -o index.html ${GITHUB_INDEX_HTML_URL}'
+                git branch: 'main', url: 'https://github.com/varahipratyangira/static-html-webpage.git'
             }
         }
         stage('Setup Terraform') {
@@ -37,6 +32,9 @@ pipeline {
                 }
             }
         }
+    }
+    triggers {
+        githubPush() // Automatically triggers builds on GitHub push events
     }
     post {
         always {
