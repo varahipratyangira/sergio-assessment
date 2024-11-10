@@ -1,48 +1,34 @@
 variable "project_id" {
-  description = "GCP Project ID"
+  description = "The project ID in Google Cloud"
   type        = string
 }
 
 variable "region" {
-  description = "GCP region"
+  description = "The GCP region for resources"
   type        = string
-  default     = "us-west1"
 }
 
 variable "location" {
-  description = "Location for resources"
+  description = "Location for the buckets"
   type        = string
-  default     = "US"
 }
 
 variable "website_bucket_name" {
-  description = "Name for the website bucket"
+  description = "The name for the static website bucket"
   type        = string
 }
 
 variable "access_logs_bucket_name" {
-  description = "Name for the access logs bucket"
+  description = "The name for the access logs bucket"
   type        = string
 }
 
 variable "gcp_credentials_file" {
-  description = "Path to GCP service account credentials file"
+  description = "Path to the GCP service account credentials JSON file"
   type        = string
 }
 
 variable "github_index_html_url" {
-  description = "URL for the static HTML page (index.html) hosted on GitHub"
+  description = "URL for the static HTML webpage hosted on Github"
   type        = string
-}
-
-variable "additional_files" {
-  description = "List of other files to upload to the bucket"
-  type        = list(string)
-  default     = []
-}
-
-variable "additional_files_paths" {
-  description = "Paths for additional files to upload to the bucket"
-  type        = list(string)
-  default     = []
 }
