@@ -1,44 +1,53 @@
 pipeline {
     agent any
+
     environment {
-        GCP_CREDENTIALS = credentials('gcp-credentials') // Use Jenkins credentials ID for GCP service account
-        TERRAFORM_DIR = './' // Root directory where Terraform files are located
-        GOOGLE_APPLICATION_CREDENTIALS = "${GCP_CREDENTIALS}" // Set for Terraform's GCP auth
+        GOOGLE_APPLICATION_CREDENTIALS = '/path/to/your/gcp-credentials-file.json'  // GCP credentials path
     }
+
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
+                // Checkout the code from GitHub
+                git 'https://github.com/varahipratyangira/gcp-terraform-ansible-deployment.git'
             }
         }
-        stage('Setup Terraform') {
+
+        stage('Initialize Terraform') {
             steps {
-                dir("${TERRAFORM_DIR}") {
-                    sh 'terraform init'
-                }
+                // Initialize Terraform
+                sh 'terraform init'
             }
         }
-        stage('Terraform Plan') {
+
+        stage('Validate Terraform') {
             steps {
-                dir("${TERRAFORM_DIR}") {
-                    sh 'terraform plan -out=tfplan'
-                }
+                // Validate Terraform configuration
+                sh 'terraform validate'
             }
         }
-        stage('Terraform Apply') {
+
+        stage('Plan Terraform') {
             steps {
-                dir("${TERRAFORM_DIR}") {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
+                // Generate Terraform plan with the variable file
+                sh 'terraform plan -var-file=terraform.tfvars'
+            }
+        }
+
+        stage('Apply Terraform') {
+            steps {
+                // Apply Terraform changes automatically
+                sh 'terraform apply -auto-approve -var-file=terraform.tfvars'
             }
         }
     }
-    triggers {
-        githubPush() // Automatically triggers builds on GitHub push events
-    }
+
     post {
-        always {
-            cleanWs() // Clean workspace after build to avoid clutter
+        success {
+            echo 'Terraform Apply completed successfully'
+        }
+        failure {
+            echo 'Terraform Apply failed'
         }
     }
 }

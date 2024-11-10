@@ -1,4 +1,3 @@
-# Provider configuration for Google Cloud
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -8,7 +7,7 @@ provider "google" {
 
 # Access Logs Bucket (Unique naming based on timestamp)
 resource "google_storage_bucket" "access_logs_bucket" {
-  name                        = var.access_logs_bucket_name
+  name                        = "${var.access_logs_bucket_name}-${timestamp()}"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -16,7 +15,7 @@ resource "google_storage_bucket" "access_logs_bucket" {
 
 # Website Bucket for Static Content (Unique naming based on timestamp)
 resource "google_storage_bucket" "website_bucket" {
-  name                        = var.website_bucket_name
+  name                        = "${var.website_bucket_name}-${timestamp()}"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -38,7 +37,7 @@ resource "google_storage_bucket" "website_bucket" {
 resource "google_storage_bucket_object" "index_html" {
   name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
-  source        = var.index_html_url
+  source        = var.github_index_html_url
   content_type  = "text/html"
 }
 
