@@ -33,32 +33,42 @@ variable "gcp_credentials_file" {
   default     = "/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json"
 }
 
-variable "force_destroy" {
-  description = "Allow force destroy of buckets"
-  default     = true
+variable "github_index_html_url" {
+  description = "GitHub URL for index.html"
+  default     = "https://github.com/varahipratyangira/static-html-webpage/blob/main/index.html"
 }
 
 variable "main_page_suffix" {
-  description = "Main page suffix for the website"
+  description = "Main page suffix for the static website"
   default     = "index.html"
 }
 
 variable "not_found_page" {
-  description = "Not found page for the website"
+  description = "Not found page for the static website"
   default     = "404.html"
 }
 
 variable "log_object_prefix" {
-  description = "Prefix for log objects"
+  description = "Prefix for access logs"
   default     = "website-access-logs/"
 }
 
-variable "github_index_html_url" {
-  description = "URL to fetch the index.html file from GitHub repository"
-  default     = "https://raw.githubusercontent.com/varahipratyangira/static-html-webpage/main/index.html"
+variable "front_end_port" {
+  description = "Port for the HTTP Load Balancer"
+  default     = "80"
 }
 
-variable "front_end_port" {
-  description = "Port for the front-end load balancer"
-  default     = "80"
+variable "force_destroy" {
+  description = "Whether to force destroy resources"
+  default     = true
+}
+
+variable "additional_files" {
+  description = "List of additional files to upload"
+  default     = []
+}
+
+variable "additional_files_paths" {
+  description = "Paths to additional files to upload"
+  default     = []
 }

@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/varahipratyangira/static-html-webpage.git'
+                git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
             }
         }
         stage('Setup Terraform') {

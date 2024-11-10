@@ -1,3 +1,4 @@
+# Provider configuration for Google Cloud
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -34,10 +35,19 @@ resource "google_storage_bucket" "website_bucket" {
 }
 
 # Fetch index.html from GitHub repository and upload to the website bucket
-resource "google_storage_object" "index_html" {
+resource "google_storage_bucket_object" "index_html" {
   name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
   source        = var.github_index_html_url
+  content_type  = "text/html"
+}
+
+# Optional: Upload other files (if needed)
+resource "google_storage_bucket_object" "other_files" {
+  count         = length(var.additional_files)
+  name          = element(var.additional_files, count.index)
+  bucket        = google_storage_bucket.website_bucket.name
+  source        = element(var.additional_files_paths, count.index)
   content_type  = "text/html"
 }
 
