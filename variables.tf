@@ -20,10 +20,10 @@ variable "location" {
 
 variable "website_bucket_name" {
   description = "Name of the bucket to host the static website"
-  default     = "trusty-wavelet-website-bucket"
+  default     = "rga-bucket"
 }
 
 variable "access_logs_bucket_name" {
   description = "Name of the bucket for storing access logs"
-  default     = "trusty-wavelet-access-logs"
+  default     = "rga-access-logs"
 }

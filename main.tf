@@ -1,6 +1,7 @@
 provider "google" {
   project = var.project_id
   region  = var.region
+  credentials = file("/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json")
   zone    = var.zone
 }
 
