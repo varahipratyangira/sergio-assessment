@@ -1,34 +1,44 @@
 pipeline {
     agent any
-
     environment {
-        GCP_PROJECT = 'trusty-wavelet-441019-i7'
-        GCP_CREDENTIALS = '/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json'
+        GCP_CREDENTIALS = credentials('gcp-credentials') // Use Jenkins credentials ID for GCP service account
+        TERRAFORM_DIR = './project-directory' // Adjust the directory path if necessary
+        GOOGLE_APPLICATION_CREDENTIALS = "${GCP_CREDENTIALS}" // Set for Terraform's GCP auth
     }
-
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                git 'https://github.com/varahipratyangira/sergio.git'
+                git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
             }
         }
-        stage('Terraform Init') {
+        stage('Setup Terraform') {
             steps {
-                sh 'terraform init'
+                dir("${TERRAFORM_DIR}") {
+                    sh 'terraform init'
+                }
+            }
+        }
+        stage('Terraform Plan') {
+            steps {
+                dir("${TERRAFORM_DIR}") {
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
         stage('Terraform Apply') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-credentials', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    sh 'terraform apply -auto-approve'
+                dir("${TERRAFORM_DIR}") {
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
     }
-
+    triggers {
+        githubPush() // Automatically triggers builds on GitHub push events
+    }
     post {
         always {
-            cleanWs()
+            cleanWs() // Clean workspace after build to avoid clutter
         }
     }
 }
