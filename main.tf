@@ -1,3 +1,4 @@
+# Provider configuration for Google Cloud
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -5,7 +6,7 @@ provider "google" {
   zone        = var.zone
 }
 
-# Access Logs Bucket
+# Access Logs Bucket (Unique naming based on timestamp)
 resource "google_storage_bucket" "access_logs_bucket" {
   name                        = var.access_logs_bucket_name
   location                    = var.location
@@ -13,7 +14,7 @@ resource "google_storage_bucket" "access_logs_bucket" {
   uniform_bucket_level_access = true
 }
 
-# Website Bucket for Static Content
+# Website Bucket for Static Content (Unique naming based on timestamp)
 resource "google_storage_bucket" "website_bucket" {
   name                        = var.website_bucket_name
   location                    = var.location
@@ -33,11 +34,11 @@ resource "google_storage_bucket" "website_bucket" {
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# Upload static website files (index.html, 404.html)
+# Fetch index.html from the GitHub repository and upload to the website bucket
 resource "google_storage_bucket_object" "index_html" {
   name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
-  source        = "index.html"  # Local file path (downloaded before apply)
+  source        = var.index_html_url
   content_type  = "text/html"
 }
 
@@ -60,10 +61,10 @@ resource "google_compute_target_http_proxy" "website_http_proxy" {
 resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
   name       = "website-forwarding-rule"
   target     = google_compute_target_http_proxy.website_http_proxy.self_link
-  port_range = var.load_balancer_frontend_port
+  port_range = "80"
 }
 
-# Optional: Upload additional files (if needed)
+# Optional: Upload additional files (if any)
 resource "google_storage_bucket_object" "additional_files" {
   count         = length(var.additional_files)
   name          = element(var.additional_files, count.index)

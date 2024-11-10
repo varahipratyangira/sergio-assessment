@@ -2,19 +2,13 @@ pipeline {
     agent any
     environment {
         GCP_CREDENTIALS = credentials('gcp-credentials') // Use Jenkins credentials ID for GCP service account
-        TERRAFORM_DIR = './project-directory' // Adjust the directory path if necessary
+        TERRAFORM_DIR = './' // Root directory where Terraform files are located
         GOOGLE_APPLICATION_CREDENTIALS = "${GCP_CREDENTIALS}" // Set for Terraform's GCP auth
     }
     stages {
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/varahipratyangira/sergio.git'
-            }
-        }
-        stage('Download HTML File') {
-            steps {
-                // Optionally, download the index.html file or any other files before applying Terraform
-                sh 'curl -o ${TERRAFORM_DIR}/index.html https://github.com/varahipratyangira/static-html-webpage/raw/main/index.html'
             }
         }
         stage('Setup Terraform') {

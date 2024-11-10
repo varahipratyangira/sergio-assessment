@@ -10,7 +10,7 @@ variable "region" {
 
 variable "zone" {
   description = "GCP Zone"
-  default     = "us-west1a"
+  default     = "us-west1-a"
 }
 
 variable "location" {
@@ -18,23 +18,23 @@ variable "location" {
   default     = "US"
 }
 
+variable "gcp_credentials_file" {
+  description = "Path to the GCP service account credentials file"
+  default     = "/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json"
+}
+
 variable "website_bucket_name" {
-  description = "Name of the bucket to host the static website"
+  description = "Base name for the bucket to host the static website"
   default     = "rga-sergio-assessment-bucket"
 }
 
 variable "access_logs_bucket_name" {
-  description = "Name of the bucket for storing access logs"
+  description = "Base name for the bucket to store access logs"
   default     = "rga-sergio-assessment-access-logs"
 }
 
-variable "gcp_credentials_file" {
-  description = "Path to the GCP credentials file"
-  default     = "/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json"
-}
-
 variable "index_html_url" {
-  description = "URL to the index.html file"
+  description = "URL of the public GitHub repository for the index.html"
   default     = "https://github.com/varahipratyangira/static-html-webpage/raw/main/index.html"
 }
 
@@ -45,12 +45,12 @@ variable "additional_files" {
 }
 
 variable "additional_files_paths" {
-  description = "List of paths to additional files"
+  description = "Paths to additional files to upload"
   type        = list(string)
   default     = []
 }
 
-variable "load_balancer_frontend_port" {
-  description = "Port for the frontend load balancer"
-  default     = "80"
+variable "load_balancer_name" {
+  description = "Name of the HTTP Load Balancer"
+  default     = "website-http-lb"
 }
