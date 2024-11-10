@@ -23,7 +23,7 @@ output "website_url" {
   value       = "http://${google_storage_bucket.website_bucket.name}.storage.googleapis.com"
 }
 
-output "load_balancer_ip" {
-  description = "IP address of the load balancer"
-  value       = google_compute_global_forwarding_rule.http_rule.ip_address
+output "load_balancer_target" {
+  description = "Target URL for HTTP load balancer"
+  value       = google_compute_global_forwarding_rule.website_forwarding_rule.self_link
 }

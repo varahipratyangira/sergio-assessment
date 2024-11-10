@@ -1,3 +1,4 @@
+# Provider configuration for Google Cloud
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -21,8 +22,8 @@ resource "google_storage_bucket" "website_bucket" {
   uniform_bucket_level_access = true
 
   website {
-    main_page_suffix = var.main_page_suffix
-    not_found_page   = var.not_found_page
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
   }
 
   logging {
@@ -30,32 +31,47 @@ resource "google_storage_bucket" "website_bucket" {
     log_object_prefix = "website-access-logs/"
   }
 
+  acl {
+    role   = "READER"
+    entity = "allUsers"
+  }
+
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# Backend bucket for the load balancer
+# Upload static website files (index.html, 404.html)
+resource "google_storage_object" "index_html" {
+  name          = "index.html"
+  bucket        = google_storage_bucket.website_bucket.name
+  source        = var.index_html_path
+  content_type  = "text/html"
+}
+
+resource "google_storage_object" "not_found_html" {
+  name          = "404.html"
+  bucket        = google_storage_bucket.website_bucket.name
+  source        = var.not_found_html_path
+  content_type  = "text/html"
+}
+
+# HTTP Load Balancer Setup
 resource "google_compute_backend_bucket" "website_backend" {
   name        = var.backend_bucket_name
   bucket_name = google_storage_bucket.website_bucket.name
-  enable_cdn  = var.enable_cdn
 }
 
-# URL map to route requests to the backend bucket
 resource "google_compute_url_map" "website_url_map" {
   name            = var.url_map_name
   default_service = google_compute_backend_bucket.website_backend.self_link
 }
 
-# HTTP proxy for handling frontend traffic
-resource "google_compute_target_http_proxy" "http_proxy" {
+resource "google_compute_target_http_proxy" "website_http_proxy" {
   name    = var.http_proxy_name
   url_map = google_compute_url_map.website_url_map.self_link
 }
 
-# Global forwarding rule to route requests to the load balancer
-resource "google_compute_global_forwarding_rule" "http_rule" {
-  name        = var.load_balancer_name
-  target      = google_compute_target_http_proxy.http_proxy.self_link
-  port_range  = var.load_balancer_port
-  ip_protocol = "TCP"
+resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
+  name       = var.forwarding_rule_name
+  target     = google_compute_target_http_proxy.website_http_proxy.self_link
+  port_range = var.http_port
 }

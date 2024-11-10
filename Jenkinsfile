@@ -32,10 +32,12 @@ pipeline {
                 }
             }
         }
-        stage('Verify Deployment') {
+        stage('Upload Files') {
             steps {
-                echo "Verifying that the static website is running and load balancer is configured..."
-                // You may add curl checks or other verification mechanisms as needed.
+                dir("${TERRAFORM_DIR}") {
+                    sh 'terraform apply -target=google_storage_object.index_html -auto-approve'
+                    sh 'terraform apply -target=google_storage_object.not_found_html -auto-approve'
+                }
             }
         }
     }
