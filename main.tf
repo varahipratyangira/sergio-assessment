@@ -2,12 +2,16 @@ provider "google" {
   project     = var.project_id
   region      = var.region
   credentials = file(var.gcp_credentials_file)
-  zone        = var.zone
+}
+
+# Generate a unique suffix for bucket names
+resource "random_id" "unique_suffix" {
+  byte_length = 8
 }
 
 # Access Logs Bucket
 resource "google_storage_bucket" "access_logs_bucket" {
-  name                        = var.access_logs_bucket_name
+  name                        = "${var.access_logs_bucket_name}-${random_id.unique_suffix.hex}"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -15,7 +19,7 @@ resource "google_storage_bucket" "access_logs_bucket" {
 
 # Website Bucket for Static Content
 resource "google_storage_bucket" "website_bucket" {
-  name                        = var.website_bucket_name
+  name                        = "${var.website_bucket_name}-${random_id.unique_suffix.hex}"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -33,48 +37,24 @@ resource "google_storage_bucket" "website_bucket" {
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# HTTP Load Balancer Resources
-resource "google_compute_backend_bucket" "website_backend" {
-  name        = "website-backend"
-  bucket_name = google_storage_bucket.website_bucket.name
-}
-
-resource "google_compute_url_map" "website_url_map" {
-  name            = "website-url-map"
-  default_service = google_compute_backend_bucket.website_backend.self_link
-}
-
-resource "google_compute_target_http_proxy" "website_http_proxy" {
-  name    = "website-http-proxy"
-  url_map = google_compute_url_map.website_url_map.self_link
-}
-
-resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
-  name       = "website-forwarding-rule"
-  target     = google_compute_target_http_proxy.website_http_proxy.self_link
-  port_range = "80"
-}
-
-# Upload static website files
+# Upload Static Website Files
 resource "google_storage_bucket_object" "index_html" {
-  name          = "index.html"
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = var.index_html_path
-  content_type  = "text/html"
+  name   = "index.html"
+  bucket = google_storage_bucket.website_bucket.name
+  source = var.index_html_path
 }
 
 resource "google_storage_bucket_object" "not_found_html" {
-  name          = "404.html"
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = var.not_found_html_path
-  content_type  = "text/html"
+  name   = "404.html"
+  bucket = google_storage_bucket.website_bucket.name
+  source = var.not_found_html_path
 }
 
-# Optional: Upload other files (if needed)
-resource "google_storage_bucket_object" "other_files" {
-  count         = length(var.additional_files)
-  name          = element(var.additional_files, count.index)
-  bucket        = google_storage_bucket.website_bucket.name
-  source        = element(var.additional_files_paths, count.index)
-  content_type  = "text/html"
+resource "google_storage_bucket_object" "additional_files" {
+  count  = length(var.additional_files)
+  name   = element(var.additional_files, count.index)
+  bucket = google_storage_bucket.website_bucket.name
+  source = element(var.additional_files_paths, count.index)
 }
+
+
