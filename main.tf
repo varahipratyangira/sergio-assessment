@@ -1,4 +1,3 @@
-# Provider configuration for Google Cloud
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -22,19 +21,41 @@ resource "google_storage_bucket" "website_bucket" {
   uniform_bucket_level_access = true
 
   website {
-    main_page_suffix = var.main_page_suffix
-    not_found_page   = var.not_found_page
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
   }
 
   logging {
     log_bucket        = google_storage_bucket.access_logs_bucket.name
-    log_object_prefix = var.log_object_prefix
+    log_object_prefix = "website-access-logs/"
   }
 
   depends_on = [google_storage_bucket.access_logs_bucket]
 }
 
-# Upload static website files (index.html, 404.html)
+# HTTP Load Balancer Resources
+resource "google_compute_backend_bucket" "website_backend" {
+  name        = "website-backend"
+  bucket_name = google_storage_bucket.website_bucket.name
+}
+
+resource "google_compute_url_map" "website_url_map" {
+  name            = "website-url-map"
+  default_service = google_compute_backend_bucket.website_backend.self_link
+}
+
+resource "google_compute_target_http_proxy" "website_http_proxy" {
+  name    = "website-http-proxy"
+  url_map = google_compute_url_map.website_url_map.self_link
+}
+
+resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
+  name       = "website-forwarding-rule"
+  target     = google_compute_target_http_proxy.website_http_proxy.self_link
+  port_range = "80"
+}
+
+# Upload static website files
 resource "google_storage_bucket_object" "index_html" {
   name          = "index.html"
   bucket        = google_storage_bucket.website_bucket.name
@@ -49,24 +70,11 @@ resource "google_storage_bucket_object" "not_found_html" {
   content_type  = "text/html"
 }
 
-# HTTP Load Balancer Setup
-resource "google_compute_backend_bucket" "website_backend" {
-  name        = var.backend_bucket_name
-  bucket_name = google_storage_bucket.website_bucket.name
-}
-
-resource "google_compute_url_map" "website_url_map" {
-  name            = var.url_map_name
-  default_service = google_compute_backend_bucket.website_backend.self_link
-}
-
-resource "google_compute_target_http_proxy" "website_http_proxy" {
-  name    = var.http_proxy_name
-  url_map = google_compute_url_map.website_url_map.self_link
-}
-
-resource "google_compute_global_forwarding_rule" "website_forwarding_rule" {
-  name       = var.forwarding_rule_name
-  target     = google_compute_target_http_proxy.website_http_proxy.self_link
-  port_range = var.http_port
+# Optional: Upload other files (if needed)
+resource "google_storage_bucket_object" "other_files" {
+  count         = length(var.additional_files)
+  name          = element(var.additional_files, count.index)
+  bucket        = google_storage_bucket.website_bucket.name
+  source        = element(var.additional_files_paths, count.index)
+  content_type  = "text/html"
 }

@@ -1,71 +1,54 @@
 variable "project_id" {
   description = "GCP Project ID"
+  default     = "trusty-wavelet-441019-i7"  # Update based on your needs
 }
 
 variable "region" {
   description = "GCP Region"
+  default     = "us-west1"
 }
 
 variable "zone" {
   description = "GCP Zone"
-}
-
-variable "gcp_credentials_file" {
-  description = "Path to the GCP credentials JSON file"
+  default     = "us-west1a"
 }
 
 variable "location" {
   description = "Location for the GCP buckets"
+  default     = "US"
 }
 
 variable "website_bucket_name" {
   description = "Name of the bucket to host the static website"
+  default     = "rga-sergio-assessment-bucket"
 }
 
 variable "access_logs_bucket_name" {
   description = "Name of the bucket for storing access logs"
+  default     = "rga-sergio-assessment-access-logs"
 }
 
-variable "main_page_suffix" {
-  description = "Main page suffix for the website"
-  default     = "index.html"
-}
-
-variable "not_found_page" {
-  description = "404 not found page for the website"
-  default     = "404.html"
-}
-
-variable "log_object_prefix" {
-  description = "Prefix for log objects in the access logs bucket"
-  default     = "website-access-logs/"
+variable "gcp_credentials_file" {
+  description = "Path to GCP credentials JSON file"
+  default     = "/home/arikatlasrinivasulu/trusty-wavelet-441019-i7-c780b14f875a.json"
 }
 
 variable "index_html_path" {
-  description = "Path to the index.html file"
+  description = "Path to index.html file for the website"
+  default     = "./index.html"
 }
 
 variable "not_found_html_path" {
-  description = "Path to the 404.html file"
+  description = "Path to 404.html file for the website"
+  default     = "./404.html"
 }
 
-variable "backend_bucket_name" {
-  description = "Name of the backend bucket for the load balancer"
+variable "additional_files" {
+  description = "List of additional files to upload"
+  default     = []
 }
 
-variable "url_map_name" {
-  description = "Name of the URL map for the load balancer"
-}
-
-variable "http_proxy_name" {
-  description = "Name of the HTTP proxy for the load balancer"
-}
-
-variable "forwarding_rule_name" {
-  description = "Name of the global forwarding rule for the load balancer"
-}
-
-variable "http_port" {
-  description = "Port for the HTTP traffic"
-  default     = "80"
+variable "additional_files_paths" {
+  description = "Paths to additional files to upload"
+  default     = []
 }
